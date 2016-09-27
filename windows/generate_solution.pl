@@ -514,7 +514,7 @@ sub writeProjectFiles {
 ";
   if ($ENABLED{CUDA}) {
   print PROJ
-'    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 8.0.props" />
+'    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 7.5.props" />
 '
   }
   print PROJ
@@ -792,7 +792,7 @@ sub writeProjectFiles {
 ";
   if ($ENABLED{CUDA}) {
     print PROJ
-'    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 8.0.targets" />
+'    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 7.5.targets" />
 ';
   }
   print PROJ
