@@ -85,7 +85,7 @@ my @propsFiles = (
 );
 
 my %optionalProps = (
-	CUDA => "$Bin/cuda_7.0.props"
+	CUDA => "$Bin/cuda_8.0.props"
 	);
 
 # see http://www.mztools.com/Articles/2008/MZ2008017.aspx for list of GUIDs for VS solutions
@@ -514,7 +514,7 @@ sub writeProjectFiles {
 ";
   if ($ENABLED{CUDA}) {
   print PROJ
-'    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 7.5.props" />
+'    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 8.0.props" />
 '
   }
   print PROJ
@@ -525,7 +525,7 @@ sub writeProjectFiles {
 ";
   if ($ENABLED{CUDA}) {
   print PROJ
-"    <Import Project=\"..\\cuda_7.0.props\" />
+"    <Import Project=\"..\\cuda_8.0.props\" />
 "
   }
   print PROJ
@@ -538,7 +538,7 @@ sub writeProjectFiles {
 ";
   if ($ENABLED{CUDA}) {
   print PROJ
-"    <Import Project=\"..\\cuda_7.0.props\" />
+"    <Import Project=\"..\\cuda_8.0.props\" />
 ";
   }
   print PROJ
@@ -551,7 +551,7 @@ sub writeProjectFiles {
 ";
   if ($ENABLED{CUDA}) {
   print PROJ
-"    <Import Project=\"..\\cuda_7.0.props\" />
+"    <Import Project=\"..\\cuda_8.0.props\" />
 ";
   }
   print PROJ
@@ -564,7 +564,7 @@ sub writeProjectFiles {
 ";
   if ($ENABLED{CUDA}) {
   print PROJ
-"    <Import Project=\"..\\cuda_7.0.props\" />
+"    <Import Project=\"..\\cuda_8.0.props\" />
 ";
   }
   print PROJ
@@ -792,7 +792,7 @@ sub writeProjectFiles {
 ";
   if ($ENABLED{CUDA}) {
     print PROJ
-'    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 7.5.targets" />
+'    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 8.0.targets" />
 ';
   }
   print PROJ
