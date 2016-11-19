@@ -15,11 +15,12 @@
 # See the Apache 2 License for the specific language governing permissions and
 # limitations under the License.
 
+srcdir=data/local/data
+lmdir=data/local/lm
+
 [ -f path.sh ] && . path.sh || exit 1;
 
 echo "Preparing train and test data"
-srcdir=data/local/data
-lexicon=data/local/dict/lexicon.txt
 
 for x in train dev test; do
   mkdir -p data/$x
@@ -58,7 +59,7 @@ for lm_suffix in bg; do
   else
       echo "$0: generating G.fst using ${arpa_lm} ..."
       arpa2fst --disambig-symbol=#0 --read-symbol-table=$test/words.txt \
-	       "bunzip2 -c $arpa_lm | local/prune_lm.pl |" $test/G.fst
+	       $lmdir/arpa.lm $test/G.fst
       echo "$0: Checking how stochastic G is (the first of these numbers should be small):"
       fstisstochastic $test/G.fst || true
       utils/validate_lang.pl --skip-determinization-check $test || exit 1
@@ -67,12 +68,6 @@ done
 
 cp -rT data/lang data/lang_rescore
 cp data/lang_test_bg/G.fst data/lang/
-
-#if [ -f data/lang_rescore/G.carpa ]; then
-#  echo "$0: not regenerating data/lang_rescore/ as it seems to already by up to date."
-#else
-#  local/build_const_arpa_lm.sh $arpa_lm data/lang_test_bg data/lang_rescore || exit 1;
-#fi
 
 echo "Succeeded in formatting data."
 

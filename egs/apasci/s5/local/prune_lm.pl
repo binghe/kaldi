@@ -23,12 +23,16 @@ while (<>) {
     s/#0/_0/g;   # remove special #0
     s/\xC0/a'/g; # was: A'
     s/\xC8/e'/g; # was: E'
+    s/\xCC/i'/g; # was: I'
     s/\xD2/o'/g; # was: O'
     s/\xD9/u'/g; # was: U'
     s/\xE0/a'/g;
     s/\xE8/e'/g;
+    s/\xEC/i'/g;
     s/\xF2/o'/g;
     s/\xF9/u'/g;
-    # s/[^[:ascii:]]/X/g;
+    s/\xE9/e/g;  # {\'e} -> e
+    # s/\xAB//g;   # remove <<
+    # s/\xBB//g;   # remove >>
     print;
 }

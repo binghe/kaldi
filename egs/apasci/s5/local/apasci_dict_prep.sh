@@ -29,19 +29,38 @@
 # run this from ../
 srcdir=data/local/data
 dir=data/local/dict
-lmdir=data/local/nist_lm
+lmdir=data/local/lm
 tmpdir=data/local/lm_tmp
 
 mkdir -p $dir $lmdir $tmpdir
 
 [ -f path.sh ] && . ./path.sh
 
-# First check if the corpus directories exist
-if [ ! -d $*/apasci/si ]; then
-  echo "apasci_dict_prep.sh: Spot check of command line argument failed"
-  echo "Command line argument must be absolute pathname to APASCI directory"
-  echo "with names like /export/corpora5/APASCI/1.0"
+if [ ! -f $* ]; then
+  echo "$0: Spot check of command line argument failed"
+  echo "Command line argument must be absolute pathname to CORIS LM"
+  echo "with names like /export/corpora5/CORIS4word2vecNOMWE_APO.arpa.lm.bz2"
   exit 1;
+fi
+
+arpa_lm=$*
+
+if ! command -v g2p >/dev/null 2>&1 ; then
+  echo "$0: Error: the G2P (CMU Flite) tool is not available or compiled" >&2
+  echo "$0: Error: We used to install it by default, but." >&2
+  echo "$0: Error: this is no longer the case." >&2
+  echo "$0: Error: To install it, go to $KALDI_ROOT/tools" >&2
+  echo "$0: Error: and run extras/install_flite-italian.sh" >&2
+  exit 1
+fi
+
+if ! command -v ngram >/dev/null 2>&1 ; then
+  echo "$0: Error: the SRILM tool is not available or compiled" >&2
+  echo "$0: Error: We used to install it by default, but." >&2
+  echo "$0: Error: this is no longer the case." >&2
+  echo "$0: Error: To install it, go to $KALDI_ROOT/tools" >&2
+  echo "$0: Error: and run install_srilm.sh" >&2
+  exit 1
 fi
 
 #(1) Dictionary preparation:
@@ -58,11 +77,6 @@ echo "SIL" > $dir/optional_silence.txt
 
 cut -d' ' -f2- $srcdir/train.trans | tr ' ' '\n' | sort -u > $dir/phones.txt
 
-# Make the initial lexicon
-echo "<SIL> SIL" > $dir/lexicon.txt
-# Then append the lexicon file from APASCI (2191 words)
-cat $*/doc/si/lexicon.doc >> $dir/lexicon.txt
-
 grep -v -F -f $dir/silence_phones.txt $dir/phones.txt > $dir/nonsilence_phones.txt 
 
 # A few extra questions that will be added to those obtained by automatically clustering
@@ -72,7 +86,44 @@ cat $dir/nonsilence_phones.txt | perl -e 'while(<>){ foreach $p (split(" ", $_))
   $p =~ m:^([^\d]+)(\d*)$: || die "Bad phone $_"; $q{$2} .= "$p "; } } foreach $l (values %q) {print "$l\n";}' \
  >> $dir/extra_questions.txt || exit 1;
 
+# Make the initial lexicon
+echo "<SIL> SIL" > $dir/lexicon.txt
+# Append phoneme-based lexicon (just an identity mapping)
+paste $dir/phones.txt $dir/phones.txt >> $dir/lexicon.txt || exit 1;
+
+## Now preparing the real lexicon from CORIS LM
+
+# Step 1: convert Latin-1 letters to ASCII letters for Italian
+# NOTE: the arpa.lm file will be used again in `format_lm.sh'
+if [ -f $lmdir/arpa.lm ]; then
+    echo "$0: not regenerating $lmdir/arpa.lm as it already exists"
+else
+    echo "$0: generating $lmdir/arpa.lm using ${arpa_lm} ..."
+    bunzip2 -c $arpa_lm | local/prune_lm.pl > $lmdir/arpa.lm
+fi
+
+# Step 2: use SRILM tools to extract the vocabulary from N-gram
+if [ -f $lmdir/vocab.txt ]; then
+    echo "$0: not regenerating $lmdir/vocab.txt as it already exists"
+else
+    echo "$0: extracting vocabulary from LM ..."
+    ngram -lm $lmdir/arpa.lm -unk -write-vocab $tmpdir/vocab.txt
+    # clean up the vocab, left only regular Italian words
+    grep "^[a-z]*[a-z']$" $tmpdir/vocab.txt | sort | uniq > $lmdir/vocab.txt
+fi
+
+# Step 3: generate lexicon using CMU flite 1.2 (with Italian support)
+echo "$0: generating lexicon from LM vocabulary ..."
+while read line; do
+    # for echo g2p output, we removed accents and combined all double-consonants to
+    # make it SAMPA compatible according to APASCI's sampa.doc
+    echo "$line " `g2p "$line"` | sed -e "s/[1#]//g;s/\([fvsSptkbdgmnJlrL]\) \1 /\1\1 /g" \
+    >> $dir/lexicon.txt
+done < $lmdir/vocab.txt
+
 # Check that the dict dir is okay!
 utils/validate_dict_dir.pl $dir || exit 1
+
+rm -rf $tmpdir
 
 echo "Dictionary preparation succeeded"
