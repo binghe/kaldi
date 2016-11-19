@@ -17,6 +17,9 @@
 
 srcdir=data/local/data
 lmdir=data/local/lm
+tmpdir=data/local/lm_tmp
+
+mkdir -p $lmdir $tmpdir
 
 [ -f path.sh ] && . path.sh || exit 1;
 
@@ -39,35 +42,60 @@ done
 
 echo Preparing language model for test
 
-# First check if the corpus directories exist
-if [ ! -f $* ]; then
-  echo "$0: Spot check of command line argument failed"
-  echo "Command line argument must be absolute pathname to CORIS LM"
-  echo "with names like /export/corpora5/CORIS4word2vecNOMWE_APO.arpa.lm.bz2"
-  exit 1;
+lm_suffix=bg
+test=data/lang_test_${lm_suffix}
+
+mkdir -p $test
+cp -r data/lang/* $test
+
+# G1.fst is a bigram based on phonemes
+if [ -f $test/G1.fst ]; then
+    echo "$0: not regenerating data/lang/G1.fst as it already exists"
+else
+    echo "$0: generating G1.fst using train data ..."
+
+    cut -d' ' -f2- $srcdir/train.trans | sed -e 's:^:<s> :' -e 's:$: </s>:' \
+	> $srcdir/lm_train.trans
+
+    build-lm.sh -i $srcdir/lm_train.trans -n 2 -o $tmpdir/lm_phone_${lm_suffix}.ilm.gz
+    compile-lm $tmpdir/lm_phone_${lm_suffix}.ilm.gz -t=yes /dev/stdout | \
+	grep -v unk | gzip -c > $lmdir/lm_phone_${lm_suffix}.arpa.gz
+
+    gunzip -c $lmdir/lm_phone_${lm_suffix}.arpa.gz | \
+    arpa2fst --disambig-symbol=#0 \
+             --read-symbol-table=$test/words.txt - $test/G1.fst
+    echo "$0: Checking how stochastic G1 is (the first of these numbers should be small):"
+    fstisstochastic $test/G1.fst || true
 fi
 
-arpa_lm=$*
+# G2.fst is a bigram based on words
+if [ -f $test/G2.fst ]; then
+    echo "$0: not regenerating data/lang/G2.fst as it already exists"
+else
+    echo "$0: generating G2.fst using ${arpa_lm} ..."
+    arpa2fst --disambig-symbol=#0 --read-symbol-table=$test/words.txt \
+	     $lmdir/arpa.lm $test/G2.fst
+    # remove too big temp LM files
+    # rm $lmdir/arpa.lm
+    echo "$0: Checking how stochastic G2 is (the first of these numbers should be small):"
+    fstisstochastic $test/G2.fst || true
+fi
 
-for lm_suffix in bg; do
-  test=data/lang_test_${lm_suffix}
-  mkdir -p $test
-  cp -r data/lang/* $test
+if [ -f $test/G.fst ]; then
+    echo "$0: not regenerating data/lang/G.fst as it already exists"
+else
+    echo "$0: generating G.fst using G1.fst and G2.fst ..."
+    fstunion $test/G1.fst $test/G2.fst | fstarcsort --sort_type=ilabel > G.fst
+    echo "$0: Checking how stochastic G is (the first of these numbers should be small):"
+    fstisstochastic $test/G.fst || true
+fi
 
-  if [ -f $test/G.fst ]; then
-      echo "$0: not regenerating data/lang/G.fst as it already exists"
-  else
-      echo "$0: generating G.fst using ${arpa_lm} ..."
-      arpa2fst --disambig-symbol=#0 --read-symbol-table=$test/words.txt \
-	       $lmdir/arpa.lm $test/G.fst
-      echo "$0: Checking how stochastic G is (the first of these numbers should be small):"
-      fstisstochastic $test/G.fst || true
-      utils/validate_lang.pl --skip-determinization-check $test || exit 1
-  fi
-done
+utils/validate_lang.pl --skip-determinization-check $test || exit 1
 
 cp -rT data/lang data/lang_rescore
 cp data/lang_test_bg/G.fst data/lang/
+
+rm -rf $tmpdir
 
 echo "Succeeded in formatting data."
 

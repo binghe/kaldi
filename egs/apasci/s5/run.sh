@@ -55,16 +55,16 @@ if [ $stage -le 1 ]; then
     local/apasci_dict_prep.sh $coris_lm || exit 1
 fi
 
-# Lang preparation
+# Lexicon preparation (L.fst)
 if [ $stage -le 2 ]; then
     utils/prepare_lang.sh data/local/dict "<SIL>" data/local/lang_tmp data/lang
 fi
 
 # time spent here: 37m55.241s
 
-# Create LM (G.fst)
+# LM preparation (G.fst)
 if [ $stage -le 3 ]; then
-    local/format_lm.sh $coris_lm
+    local/format_lm.sh
 fi
 
 echo ============================================================================
