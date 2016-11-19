@@ -117,7 +117,7 @@ echo "$0: generating lexicon from LM vocabulary ..."
 while read line; do
     # for echo g2p output, we removed accents and combined all double-consonants to
     # make it SAMPA compatible according to APASCI's sampa.doc
-    echo "$line " `g2p "$line"` | sed -e "s/[1#]//g;s/\([fvsSptkbdgmnJlrL]\) \1 /\1\1 /g" \
+    echo "$line " `g2p "$line"` | sed -e "s/[1#]//g;s/ \([fvsSptkbdgmnJlrL]\) \1 / \1\1 /g" \
     >> $dir/lexicon.txt
 done < $lmdir/vocab.txt
 
