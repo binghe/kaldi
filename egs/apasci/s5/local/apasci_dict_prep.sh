@@ -30,9 +30,8 @@
 srcdir=data/local/data
 dir=data/local/dict
 lmdir=data/local/lm
-tmpdir=data/local/lm_tmp
 
-mkdir -p $dir $lmdir $tmpdir
+mkdir -p $dir $lmdir
 
 [ -f path.sh ] && . ./path.sh
 
@@ -108,11 +107,11 @@ if [ -f $lmdir/vocab.txt ]; then
 else
     echo "$0: extracting vocabulary from LM ..."
     ngram -lm $lmdir/coris.arpa.lm.gz -unk -prune-lowprobs \
-	  -write-lm $tmpdir/coris-pruned.arpa.lm.gz \
-	  -write-vocab $tmpdir/vocab-raw.txt
+	  -write-lm $lmdir/coris-pruned.arpa.lm.gz \
+	  -write-vocab $lmdir/vocab-raw.txt
 
     # clean up the vocab, left only regular Italian words (and length <= 20)
-    grep "^[a-z]*[a-z']$" $tmpdir/vocab-raw.txt | sed 1d | grep -x '.\{1,20\}' \
+    grep "^[a-z]*[a-z']$" $lmdir/vocab-raw.txt | sed 1d | grep -x '.\{1,20\}' \
 	| sort | uniq > $lmdir/vocab.txt
 fi
 
@@ -121,8 +120,8 @@ if [ -f $lmdir/coris-pruned-limited.arpa.lm.gz ]; then
 else
     echo "$0: reduce the size of CORIS LM ..."
     # reduce the size of LM
-    ngram -lm $tmpdir/coris-pruned.arpa.lm.gz -unk -vocab $lmdir/vocab.txt -limit-vocab \
-	  -prune-lowprobs -prune 0.5 \
+    ngram -lm $lmdir/coris-pruned.arpa.lm.gz -unk -vocab $lmdir/vocab.txt -limit-vocab \
+	  -prune-lowprobs \
 	  -write-lm $lmdir/coris-pruned-limited.arpa.lm.gz
 fi
 
@@ -145,7 +144,5 @@ rm -f $dir/lexiconp.txt
 
 # Check that the dict dir is okay!
 utils/validate_dict_dir.pl $dir || exit 1
-
-rm -rf $tmpdir
 
 echo "Dictionary preparation succeeded"
