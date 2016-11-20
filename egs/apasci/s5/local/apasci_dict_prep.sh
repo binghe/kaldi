@@ -95,11 +95,11 @@ paste $dir/phones.txt $dir/phones.txt >> $dir/lexicon.txt || exit 1;
 
 # Step 1: convert Latin-1 letters to ASCII letters for Italian
 # NOTE: the arpa.lm file will be used again in `format_lm.sh'
-if [ -f $lmdir/arpa.lm ]; then
+if [ -f $lmdir/coris.arpa.lm.gz ]; then
     echo "$0: not regenerating $lmdir/arpa.lm as it already exists"
 else
     echo "$0: generating $lmdir/arpa.lm using ${arpa_lm} ..."
-    bunzip2 -c $arpa_lm | local/prune_lm.pl > $lmdir/arpa.lm
+    bzip2 -dc $arpa_lm | local/prune_lm.pl | gzip -c > $lmdir/coris.arpa.lm.gz
 fi
 
 # Step 2: use SRILM tools to extract the vocabulary from N-gram
@@ -107,19 +107,40 @@ if [ -f $lmdir/vocab.txt ]; then
     echo "$0: not regenerating $lmdir/vocab.txt as it already exists"
 else
     echo "$0: extracting vocabulary from LM ..."
-    ngram -lm $lmdir/arpa.lm -unk -write-vocab $tmpdir/vocab.txt
-    # clean up the vocab, left only regular Italian words
-    grep "^[a-z]*[a-z']$" $tmpdir/vocab.txt | sort | uniq > $lmdir/vocab.txt
+    ngram -lm $lmdir/coris.arpa.lm.gz -unk -prune-lowprobs \
+	  -write-lm $tmpdir/coris-pruned.arpa.lm.gz \
+	  -write-vocab $tmpdir/vocab-raw.txt
+
+    # clean up the vocab, left only regular Italian words (and length <= 20)
+    grep "^[a-z]*[a-z']$" $tmpdir/vocab-raw.txt | sed 1d | grep -x '.\{1,20\}' \
+	| sort | uniq > $lmdir/vocab.txt
+fi
+
+if [ -f $lmdir/coris-pruned-limited.arpa.lm.gz ]; then
+    echo "$0: not regenerating $lmdir/coris-pruned-limited.arpa.lm.gz as it already exists"
+else
+    echo "$0: reduce the size of CORIS LM ..."
+    # reduce the size of LM
+    ngram -lm $tmpdir/coris-pruned.arpa.lm.gz -unk -vocab $lmdir/vocab.txt -limit-vocab \
+	  -prune-lowprobs -prune 0.5 \
+	  -write-lm $lmdir/coris-pruned-limited.arpa.lm.gz
 fi
 
 # Step 3: generate lexicon using CMU flite 1.2 (with Italian support)
-echo "$0: generating lexicon from LM vocabulary ..."
-while read line; do
-    # for echo g2p output, we removed accents and combined all double-consonants to
-    # make it SAMPA compatible according to APASCI's sampa.doc
-    echo "$line " `g2p "$line"` | sed -e "s/[1#]//g;s/ \([fvsSptkbdgmnJlrL]\) \1 / \1\1 /g" \
-    >> $dir/lexicon.txt
-done < $lmdir/vocab.txt
+if [ -f $lmdir/lexicon.txt ]; then
+    echo "$0: not regenerating $lmdir/lexicon.txt as it already exists"
+else
+    echo "$0: generating lexicon from LM vocabulary ..."
+    rm -f $lmdir/lexicon.txt
+    while read line; do
+	# for echo g2p output, we removed accents and combined all double-consonants to
+	# make it SAMPA compatible according to APASCI's sampa.doc
+	echo "$line " `g2p "$line"` | sed -e "s/[1#]//g;s/ \([fvsSptkbdgmnJlrL]\) \1 / \1\1 /g" \
+					  >> $lmdir/lexicon.txt
+    done < $lmdir/vocab.txt
+fi
+
+cat $lmdir/lexicon.txt >> $dir/lexicon.txt
 
 # Check that the dict dir is okay!
 utils/validate_dict_dir.pl $dir || exit 1

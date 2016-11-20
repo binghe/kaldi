@@ -74,7 +74,7 @@ if [ -f $test/G2.fst ]; then
 else
     echo "$0: generating G2.fst using ${arpa_lm} ..."
     arpa2fst --disambig-symbol=#0 --read-symbol-table=$test/words.txt \
-	     $lmdir/arpa.lm $test/G2.fst
+	     "gzip -dc $lmdir/coris-pruned-limited.arpa.lm |" $test/G2.fst
     # remove too big temp LM files
     # rm $lmdir/arpa.lm
     echo "$0: Checking how stochastic G2 is (the first of these numbers should be small):"
@@ -85,7 +85,7 @@ if [ -f $test/G.fst ]; then
     echo "$0: not regenerating data/lang/G.fst as it already exists"
 else
     echo "$0: generating G.fst using G1.fst and G2.fst ..."
-    fstunion $test/G1.fst $test/G2.fst | fstarcsort --sort_type=ilabel > G.fst
+    fstunion $test/G1.fst $test/G2.fst | fstarcsort --sort_type=ilabel > $test/G.fst
     echo "$0: Checking how stochastic G is (the first of these numbers should be small):"
     fstisstochastic $test/G.fst || true
 fi
