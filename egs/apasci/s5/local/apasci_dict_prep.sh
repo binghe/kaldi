@@ -97,7 +97,7 @@ paste $dir/phones.txt $dir/phones.txt >> $dir/lexicon.txt || exit 1;
 if [ -f $lmdir/coris.arpa.lm.gz ]; then
     echo "$0: not regenerating $lmdir/coris.arpa.lm.gz as it already exists"
 else
-    echo "$0: generating $lmdir/arpa.lm using ${arpa_lm} ..."
+    echo "$0: generating $lmdir/coris.arpa.lm.gz using ${arpa_lm} ..."
     bzip2 -dc $arpa_lm | local/prune_lm.pl | gzip -c > $lmdir/coris.arpa.lm.gz
 fi
 
@@ -119,9 +119,9 @@ if [ -f $lmdir/coris-pruned-limited.arpa.lm.gz ]; then
     echo "$0: not regenerating $lmdir/coris-pruned-limited.arpa.lm.gz as it already exists"
 else
     echo "$0: reduce the size of CORIS LM ..."
-    # reduce the size of LM
-    ngram -lm $lmdir/coris-pruned.arpa.lm.gz -unk -vocab $lmdir/vocab.txt -limit-vocab \
-	  -prune-lowprobs \
+    # reduce the size of LM, using only order 1 & 2
+    ngram -lm $lmdir/coris-pruned.arpa.lm.gz -order 2 -unk -prune-lowprobs \
+	  -vocab $lmdir/vocab.txt -limit-vocab \
 	  -write-lm $lmdir/coris-pruned-limited.arpa.lm.gz
 fi
 
