@@ -96,7 +96,7 @@ paste $dir/phones.txt $dir/phones.txt >> $dir/lexicon.txt || exit 1;
 # Step 1: convert Latin-1 letters to ASCII letters for Italian
 # NOTE: the arpa.lm file will be used again in `format_lm.sh'
 if [ -f $lmdir/coris.arpa.lm.gz ]; then
-    echo "$0: not regenerating $lmdir/arpa.lm as it already exists"
+    echo "$0: not regenerating $lmdir/coris.arpa.lm.gz as it already exists"
 else
     echo "$0: generating $lmdir/arpa.lm using ${arpa_lm} ..."
     bzip2 -dc $arpa_lm | local/prune_lm.pl | gzip -c > $lmdir/coris.arpa.lm.gz
@@ -141,6 +141,7 @@ else
 fi
 
 cat $lmdir/lexicon.txt >> $dir/lexicon.txt
+rm -f $dir/lexiconp.txt
 
 # Check that the dict dir is okay!
 utils/validate_dict_dir.pl $dir || exit 1
