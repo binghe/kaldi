@@ -134,8 +134,9 @@ else
     while read line; do
 	# for echo g2p output, we removed accents and combined all double-consonants to
 	# make it SAMPA compatible according to APASCI's sampa.doc
-	echo "$line " `g2p "$line"` | sed -e "s/[1#]//g;s/ \([fvsSptkbdgmnJlrL]\) \1 / \1\1 /g" \
-					  >> $lmdir/lexicon.txt
+	echo "$line " `g2p "$line"` | \
+	    sed -e "s/[1#]//g; s/ \([fvsSptkbdgmnJlrL]\) \1 / \1\1 /g; s/ \([dt]\)\([zZsS]\) \1\2 / \1\1\2 /g;" \
+		>> $lmdir/lexicon.txt
     done < $lmdir/vocab.txt
 fi
 
