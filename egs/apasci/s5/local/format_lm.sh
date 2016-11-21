@@ -93,7 +93,7 @@ fi
 utils/validate_lang.pl --skip-determinization-check $test || exit 1
 
 cp -rT data/lang data/lang_rescore
-cp data/lang_test_bg/G.fst data/lang/
+cp data/lang_test_bg/G.fst data/lang_rescore/
 
 rm -rf $tmpdir
 

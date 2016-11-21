@@ -88,7 +88,7 @@ cat $dir/nonsilence_phones.txt | perl -e 'while(<>){ foreach $p (split(" ", $_))
 # Make the initial lexicon
 echo "<SIL> SIL" > $dir/lexicon.txt
 # Append phoneme-based lexicon (just an identity mapping)
-paste $dir/phones.txt $dir/phones.txt >> $dir/lexicon.txt || exit 1;
+# paste $dir/phones.txt $dir/phones.txt >> $dir/lexicon.txt || exit 1;
 
 ## Now preparing the real lexicon from CORIS LM
 
