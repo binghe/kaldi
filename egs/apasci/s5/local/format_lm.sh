@@ -68,13 +68,13 @@ else
     fstisstochastic $test/G1.fst || true
 fi
 
-# G2.fst is a bigram based on words
+# G.fst is a bigram based on words
 if [ -f $test/G.fst ]; then
     echo "$0: not regenerating data/lang/G.fst as it already exists"
 else
     echo "$0: generating G.fst using $lmdir/coris-pruned-limited.arpa.lm ..."
     arpa2fst --disambig-symbol=#0 --read-symbol-table=$test/words.txt \
-	     "gzip -dc $lmdir/coris-pruned-limited.arpa.lm |" $test/G2.fst
+	     "gzip -dc $lmdir/coris-pruned-limited.arpa.lm |" $test/G.fst
     echo "$0: Checking how stochastic G2 is (the first of these numbers should be small):"
     fstisstochastic $test/G.fst || true
 fi
