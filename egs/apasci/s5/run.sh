@@ -52,12 +52,13 @@ fi
 
 # Dict preparation
 if [ $stage -le 1 ]; then
-    local/apasci_dict_prep.sh $coris_lm || exit 1
+    local/apasci_dict_prep.sh $apasci $coris_lm || exit 1
 fi
 
 # Lexicon preparation (L.fst)
 if [ $stage -le 2 ]; then
     utils/prepare_lang.sh data/local/dict "<SIL>" data/local/lang_tmp data/lang
+    utils/prepare_lang.sh data/local/dict_test "<SIL>" data/local/lang_test_tmp data/lang_test
 fi
 
 # LM preparation (G.fst)

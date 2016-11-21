@@ -46,7 +46,7 @@ lm_suffix=bg
 test=data/lang_test_${lm_suffix}
 
 mkdir -p $test
-cp -r data/lang/* $test
+cp -r data/lang_test/* $test
 
 # G1.fst is a bigram based on phonemes (not used any more)
 if [ -f $test/G1.fst ]; then
@@ -69,31 +69,20 @@ else
 fi
 
 # G2.fst is a bigram based on words
-if [ -f $test/G2.fst ]; then
-    echo "$0: not regenerating data/lang/G2.fst as it already exists"
-else
-    echo "$0: generating G2.fst using $lmdir/coris-pruned-limited.arpa.lm ..."
-    arpa2fst --disambig-symbol=#0 --read-symbol-table=$test/words.txt \
-	     "gzip -dc $lmdir/coris-pruned-limited.arpa.lm |" $test/G2.fst
-    echo "$0: Checking how stochastic G2 is (the first of these numbers should be small):"
-    fstisstochastic $test/G2.fst || true
-fi
-
 if [ -f $test/G.fst ]; then
     echo "$0: not regenerating data/lang/G.fst as it already exists"
 else
-    ln -s G2.fst $test/G.fst
-    ## NOTE: the following idea doesn't work ... it caused infinite loops in FST determinizer
-    # echo "$0: generating G.fst using G1.fst and G2.fst ..."
-    # fstunion $test/G1.fst $test/G2.fst | fstarcsort --sort_type=ilabel > $test/G.fst
-    # echo "$0: Checking how stochastic G is (the first of these numbers should be small):"
-    # fstisstochastic $test/G.fst || true
+    echo "$0: generating G.fst using $lmdir/coris-pruned-limited.arpa.lm ..."
+    arpa2fst --disambig-symbol=#0 --read-symbol-table=$test/words.txt \
+	     "gzip -dc $lmdir/coris-pruned-limited.arpa.lm |" $test/G2.fst
+    echo "$0: Checking how stochastic G2 is (the first of these numbers should be small):"
+    fstisstochastic $test/G.fst || true
 fi
 
 utils/validate_lang.pl --skip-determinization-check $test || exit 1
 
-cp -rT data/lang data/lang_rescore
-cp data/lang_test_bg/G.fst data/lang_rescore/
+cp -rT data/lang_test data/lang_rescore
+cp data/lang_test_bg/G.fst data/lang_rescore
 
 rm -rf $tmpdir
 
