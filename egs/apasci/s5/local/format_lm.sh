@@ -46,7 +46,7 @@ lm_suffix=bg
 test=data/lang_test_${lm_suffix}
 
 mkdir -p $test
-cp -r data/lang_test/* $test
+cp -r data/lang/* $test
 
 # G1.fst is a bigram based on phonemes (not used any more)
 if [ -f $test/G1.fst ]; then
@@ -81,7 +81,7 @@ fi
 
 utils/validate_lang.pl --skip-determinization-check $test || exit 1
 
-cp -rT data/lang_test data/lang_rescore
+cp -rT data/lang data/lang_rescore
 cp data/lang_test_bg/G.fst data/lang_rescore
 
 rm -rf $tmpdir

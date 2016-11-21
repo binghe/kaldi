@@ -29,10 +29,9 @@
 # run this from ../
 srcdir=data/local/data
 dir=data/local/dict
-dir_test=data/local/dict_test
 lmdir=data/local/lm
 
-mkdir -p $dir ${dir_test} $lmdir
+mkdir -p $dir $lmdir
 
 [ -f path.sh ] && . ./path.sh
 
@@ -54,7 +53,6 @@ if [ ! -f $2 ]; then
   exit 1;
 fi
 
-apasci=$1
 coris_lm=$2
 
 if ! command -v g2p >/dev/null 2>&1 ; then
@@ -102,16 +100,8 @@ cat $dir/nonsilence_phones.txt | perl -e 'while(<>){ foreach $p (split(" ", $_))
 echo "<SIL> SIL" > $dir/lexicon.txt
 # 2. (disabled, from TIMIT) Append phoneme-based lexicon (just an identity mapping)
 # paste $dir/phones.txt $dir/phones.txt >> $dir/lexicon.txt || exit 1;
-# 3. Append the lexicon file from APASCI (2191 words)
-cat $apasci/doc/si/lexicon.doc >> $dir/lexicon.txt
-rm -f $dir/lexiconp.txt
-
-# Check that the dict dir is okay!
-utils/validate_dict_dir.pl $dir || exit 1
-
-## Now preparing the real lexicon from CORIS LM
-cp -r $dir/* ${dir_test}
-echo "<SIL> SIL" > ${dir_test}/lexicon.txt
+# 3. (disabled) Append the lexicon file from APASCI (2191 words)
+# cat $apasci/doc/si/lexicon.doc >> $dir/lexicon.txt
 
 # Step 1: convert Latin-1 letters to ASCII letters for Italian
 # NOTE: the arpa.lm file will be used again in `format_lm.sh'
@@ -161,10 +151,10 @@ else
     done < $lmdir/vocab.txt
 fi
 
-cat $lmdir/lexicon.txt >> ${dir_test}/lexicon.txt
-rm -f ${dir_test}/lexiconp.txt
+cat $lmdir/lexicon.txt >> $dir/lexicon.txt
+rm -f $dir/lexiconp.txt
 
 # Check that the dict dir is okay!
-utils/validate_dict_dir.pl ${dir_test} || exit 1
+utils/validate_dict_dir.pl $dir || exit 1
 
 echo "Dictionary preparation succeeded"

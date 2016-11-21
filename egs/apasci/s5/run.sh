@@ -58,7 +58,6 @@ fi
 # Lexicon preparation (L.fst)
 if [ $stage -le 2 ]; then
     utils/prepare_lang.sh data/local/dict "<SIL>" data/local/lang_tmp data/lang
-    utils/prepare_lang.sh data/local/dict_test "<SIL>" data/local/lang_test_tmp data/lang_test
 fi
 
 # LM preparation (G.fst)
