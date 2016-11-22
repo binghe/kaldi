@@ -26,7 +26,7 @@ local=`pwd`/local
 utils=`pwd`/utils
 conf=`pwd`/conf
 
-. ./path.sh # Needed for KALDI_ROOT
+. path.sh # Needed for KALDI_ROOT
 export PATH=$PATH:$KALDI_ROOT/tools/irstlm/bin
 sph2pipe=$KALDI_ROOT/tools/sph2pipe_v2.5/sph2pipe
 if [ ! -x $sph2pipe ]; then
@@ -39,7 +39,7 @@ fi
 [ -f $conf/test_spk.list ] || error_exit "$PROG: test-set speaker list not found.";
 
 # First check if the corpus directories exist
-if [ ! -d $*/apasci/si ]; then
+if [ ! -d "$*/apasci/si" ]; then
   echo "$0: Spot check of command line argument failed"
   echo "Command line argument must be absolute pathname to APASCI directory"
   echo "with names like /export/corpora5/APASCI/1.0"

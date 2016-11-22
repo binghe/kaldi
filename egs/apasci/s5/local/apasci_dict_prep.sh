@@ -33,11 +33,11 @@ lmdir=data/local/lm
 
 mkdir -p $dir $lmdir
 
-[ -f path.sh ] && . ./path.sh
+[ -f path.sh ] && . path.sh
 
 # First check if the corpus directories exist
-if [ ! -d $1/apasci/si ]; then
-  echo "$0: Spot check of command line argument failed"
+if [ ! -d "$1/apasci/si" ]; then
+  echo "$0: Spot check of 1st command line argument failed"
   echo "Command line argument must be absolute pathname to APASCI directory"
   echo "with names like /export/corpora5/APASCI/1.0"
   exit 1;
@@ -46,8 +46,8 @@ fi
 apasci=$1
 
 # Then check if the CORIS LM file exists
-if [ ! -f $2 ]; then
-  echo "$0: Spot check of command line argument failed"
+if [ ! -f "$2" ]; then
+  echo "$0: Spot check of 2nd command line argument failed"
   echo "Command line argument must be absolute pathname to CORIS LM"
   echo "with names like /export/corpora5/CORIS4word2vecNOMWE_APO.arpa.lm.bz2"
   exit 1;
