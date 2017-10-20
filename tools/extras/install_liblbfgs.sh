@@ -1,7 +1,7 @@
 #!/bin/bash
 VER=1.10
 if [ ! -f liblbfgs-$VER.tar.gz ]; then
-  wget https://github.com/downloads/chokkan/liblbfgs/liblbfgs-$VER.tar.gz
+  wget --no-check-certificate https://github.com/downloads/chokkan/liblbfgs/liblbfgs-$VER.tar.gz
 fi
 
 tar -xzf liblbfgs-$VER.tar.gz
